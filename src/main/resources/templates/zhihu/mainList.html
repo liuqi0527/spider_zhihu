@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+      layout:decorate="layout">
+<head>
+    <title>MainTopic : View all</title>
+    <meta charset="utf-8"/>
+    <link href="../../css/bootstrap-3.3.7.css" rel="stylesheet"/>
+    <link href="../../css/bootstrap-theme-3.3.7.css" rel="stylesheet"/>
+
+    <script src="../../js/jquery-3.2.1.js"></script>
+    <script src="../../js/bootstrap-3.3.7.js"></script>
+    <script src="../../js/utils.js"></script>
+</head>
+<body>
+<div layout:fragment="content" class="container">
+    <br/>
+    <br/>
+    <br/>
+    <ol class="breadcrumb">
+        <li class="active">总览</li>
+    </ol>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <td>ID</td>
+            <td>Name</td>
+            <td>Operation</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${list.empty}">
+            <td colspan="3">No Topic</td>
+        </tr>
+        <tr th:each="topic : ${list}">
+            <td th:text="${topic.id}">主题ID</td>
+            <td th:text="${topic.name}">主题名称</td>
+            <td><a href="view.html" th:href="@{'/topic/' + ${topic.id}}"> 查看 </a></td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <div style="position:fixed; right:20px; bottom: 100px;" id="div11">
+        <button type="button" class="btn btn-default" onclick="scrollTop1()">
+            <span class="glyphicon glyphicon-chevron-up"></span>
+        </button>
+        <br/>
+        <button type="button" class="btn btn-default" onclick="scrollBottom()">
+            <span class="glyphicon glyphicon-chevron-down"></span>
+        </button>
+        <br/>
+    </div>
+</div>
+
+<div style="position:fixed; right:20px; bottom: 100px;" id="div11">
+    <button type="button" class="btn btn-default" onclick="scrollTop1()">
+        <span class="glyphicon glyphicon-chevron-up"></span>
+    </button>
+    <br/>
+    <button type="button" class="btn btn-default" onclick="scrollBottom()">
+        <span class="glyphicon glyphicon-chevron-down"></span>
+    </button>
+    <br/>
+</div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+      layout:decorate="layout">
+<head>
+    <title>Question : View all</title>
+
+    <meta charset="utf-8"/>
+    <link href="../../css/bootstrap-3.3.7.css" rel="stylesheet"/>
+    <link href="../../css/bootstrap-theme-3.3.7.css" rel="stylesheet"/>
+    <link href="../../css/footable-0.1.css" rel="stylesheet" type="text/css"/>
+    <link href="../../css/footable.sortable-0.1.css" rel="stylesheet" type="text/css"/>
+
+    <script src="../../js/jquery-3.2.1.js"></script>
+    <script src="../../js/bootstrap-3.3.7.js"></script>
+    <script src="../../js/utils.js"></script>
+    <script src="../../js/footable-0.1.js" type="text/javascript"></script>
+    <script src="../../js/footable.sortable.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            $('table').footable();
+        });
+
+        var hasListener = false;
+        var requestData = function (id) {
+            if (hasListener) {
+                return;
+            }
+            hasListener = true;
+
+            var eventSource = new EventSource("/quest/load/" + id);
+
+            eventSource.addEventListener("open", function (e) {
+                console.log("event connect opened");
+            });
+
+            eventSource.addEventListener("message", function (e) {
+                console.log("new Message: id=" + e.id + ", type=" + e.type + ", event=" + e.event + ", data=" + e.data);
+                addData(JSON.parse(e.data));
+            });
+
+            eventSource.addEventListener("error", function (e) {
+                console.log("error " + eventSource.readyState);
+            });
+
+            eventSource.addEventListener("shutdown", function (e) {
+                console.log("server event connect closed");
+                eventSource.close();
+            })
+        };
+
+        var addData = function (data) {
+            var id = data.id;
+            var trObj = document.createElement("tr");
+            trObj.id = "quest_" + data.id;
+            trObj.appendChild(createTd("id_" + id, data.id));
+            trObj.appendChild(createTd("title_" + id, data.title));
+            trObj.appendChild(createTd("author_" + id, data.author));
+            trObj.appendChild(createTd("des_" + id, data.description));
+            trObj.appendChild(createTd("comment_" + id, data.commentCount));
+            trObj.appendChild(createTd("answer_" + id, data.answerCount));
+            trObj.appendChild(createTd("focus_" + id, data.focusCount));
+            trObj.appendChild(createTd("view_" + id, data.viewCount));
+            trObj.appendChild(createBtn(" 查看 ", id));
+            document.getElementById("table_body").appendChild(trObj);
+        };
+
+        function createTd(id, text) {
+            var tdObj = document.createElement("td");
+            tdObj.id = id;
+            tdObj.innerHTML = text;
+            return tdObj;
+        }
+
+        function createBtn(text, id) {
+            var btnObj = document.createElement("a");
+            btnObj.href = "/quest/detail/" + id;
+            btnObj.appendChild(document.createTextNode(text));
+
+            var tdObj = document.createElement("td");
+            tdObj.appendChild(btnObj);
+            return tdObj;
+        }
+    </script>
+</head>
+<body>
+
+<div layout:fragment="content" class="container">
+    <br/>
+    <br/>
+    <br/>
+
+    <ol class="breadcrumb">
+        <li><a href="#" th:href="@{/topic}">总览</a></li>
+        <li><a href="#" th:href="@{'/topic/' + ${mainTopic.id}}" th:text="${mainTopic.name}">主题</a></li>
+        <li class="active" th:text="${subTopic.name}">子主题 </li>
+    </ol>
+
+    <table class="footable table table-stripped" data-page-size="8">
+        <thead>
+        <tr>
+            <th data-class="expand" data-sort-initial="true">ID</th>
+            <th data-sort-ignore="true">Title</th>
+            <th>Author</th>
+            <th data-sort-ignore="true">Content</th>
+            <th data-type="numeric">Comment</th>
+            <th data-type="numeric">Answer</th>
+            <th data-type="numeric">Focus</th>
+            <th data-type="numeric">View</th>
+            <th data-sort-ignore="true">Operation</th>
+        </tr>
+        </thead>
+
+        <tbody id="table_body">
+        <tr th:if="${list.empty}">
+            <button type="button" class="btn btn-primary" th:onclick="'javascript:requestData(' + ${subTopic.id} + ')'">
+                Reload
+            </button>
+        </tr>
+
+        <tr th:each="quest : ${list}">
+            <td th:text="${quest.id}">ID</td>
+            <td th:text="${quest.title}">title</td>
+            <td th:text="${quest.author}">author</td>
+            <td th:text="${quest.description}">description</td>
+            <td th:text="${quest.commentCount}">commentCount</td>
+            <td th:text="${quest.answerCount}">answerCount</td>
+            <td th:text="${quest.focusCount}">focusCount</td>
+            <td th:text="${quest.viewCount}">viewCount</td>
+            <td><a href="view.html" th:href="@{/quest/detail/{id}/(id=${quest.id})}"> 查看 </a></td>
+        </tr>
+        </tbody>
+
+        <tfoot>
+        <tr>
+            <td colspan="20">
+                <ul class="pagination pull-right">
+                    <li th:each="index : ${#numbers.sequence(0, pageSize)}">
+                        <a href="#" th:if="${page == index}" th:text="${index}">href</a>
+                        <a href="#" th:if="${page != index}" th:href="@{/quest/{id}/{i}(id=${subTopic.id},i=${index})}"
+                           th:text="${index}">href</a>
+                    </li>
+                </ul>
+            </td>
+        </tr>
+
+
+        </tfoot>
+    </table>
+</div>
+
+
+<div style="position:fixed; right:20px; bottom: 100px;" id="div11">
+    <button type="button" class="btn btn-default" onclick="scrollTop1()">
+        <span class="glyphicon glyphicon-chevron-up"></span>
+    </button>
+    <br/>
+    <button type="button" class="btn btn-default" onclick="scrollBottom()">
+        <span class="glyphicon glyphicon-chevron-down"></span>
+    </button>
+    <br/>
+</div>
+
+</body>
+</html>
+</link>
