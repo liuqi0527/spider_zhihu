@@ -1,16 +1,16 @@
 package com.example.spider.jsoup;
 
-import com.alibaba.fastjson.JSONObject;
+import java.io.File;
+import java.nio.charset.Charset;
+
+import com.example.spider.util.JsonUtil;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
-import java.io.File;
-import java.nio.charset.Charset;
 
 /**
  * @author LiuQi
@@ -37,7 +37,7 @@ public class JsoupTest {
             //author
             System.out.println("=====================================================================================================");
             String dataJson = document.select("div[data-zop-question]").attr("data-zop-question");
-            System.out.println(((JSONObject) JSONObject.parse(dataJson)).getString("authorName"));
+            System.out.println(JsonUtil.readStringField(dataJson, "authorName"));
 
             //content
             System.out.println("=====================================================================================================");

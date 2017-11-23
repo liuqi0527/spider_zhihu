@@ -1,8 +1,12 @@
 package com.example.spider.controller.laboratory;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.example.spider.domain.Question;
+import com.example.spider.util.JsonUtil;
+
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Controller;
@@ -11,10 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author LiuQi
@@ -54,7 +54,7 @@ public class SseEventController {
                     question.setAnswerCount(RandomUtils.nextInt());
                     question.setViewCount(RandomUtils.nextInt());
                     question.setFocusCount(RandomUtils.nextInt());
-                    emitter.send(JSON.toJSONString(question));
+                    emitter.send(JsonUtil.toJson(question));
                 }
                 emitter.send(SseEmitter.event().name("shutdown").data("shutdown"));
                 emitter.complete();

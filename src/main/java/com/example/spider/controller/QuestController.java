@@ -1,7 +1,16 @@
 package com.example.spider.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.PostConstruct;
+
 import com.example.spider.dao.MainTopicRepository;
 import com.example.spider.dao.QuestionRepository;
 import com.example.spider.dao.SubTopicRepository;
@@ -9,6 +18,9 @@ import com.example.spider.domain.MainTopic;
 import com.example.spider.domain.Question;
 import com.example.spider.domain.SubTopic;
 import com.example.spider.util.FunctionWithException;
+import com.example.spider.util.JsonUtil;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.translate.UnicodeUnescaper;
 import org.apache.http.NameValuePair;
@@ -32,16 +44,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import javax.annotation.PostConstruct;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author LiuQi
@@ -129,7 +131,8 @@ public class QuestController {
 
                         //author
                         String dataJson = document.select("div[data-zop-question]").attr("data-zop-question");
-                        question.setAuthor(((JSONObject) JSONObject.parse(dataJson)).getString("authorName"));
+                        JsonNode jsonNode = JsonUtil.objectMapper.readTree(dataJson);
+                        question.setAuthor(jsonNode.get("authorName").asText());
 
                         //关注者   被浏览
                         Elements focusEle = document.select("div.NumberBoard");
@@ -157,16 +160,16 @@ public class QuestController {
                         }
 
                         list.add(question);
-                        System.out.println("load quest result -> " + JSON.toJSONString(question));
+                        System.out.println("load quest result -> " + JsonUtil.toJson(question));
 
                         sendSseEvent(subTopicId, sseEmitter -> {
-                            sseEmitter.send(JSON.toJSONString(question));
+                            sseEmitter.send(JsonUtil.toJson(question));
                             return false;
                         });
                         List<SseEmitter> sseEmitters = sseEmitterMap.computeIfAbsent(subTopicId, key -> new ArrayList<>());
                         sseEmitters.forEach(sseEmitter -> {
                             try {
-                                sseEmitter.send(JSON.toJSONString(question));
+                                sseEmitter.send(JsonUtil.toJson(question));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
